@@ -8,6 +8,7 @@
 
 %token ID, INT, FLOAT, BOOL, NUM, LIT, VOID, MAIN, READ, WRITE, IF, ELSE
 %token WHILE,TRUE, FALSE, IF, ELSE
+%token DO
 %token EQ, LEQ, GEQ, NEQ 
 %token AND, OR
 
@@ -55,6 +56,16 @@ lcmd : lcmd cmd
 	   
 cmd : exp	';' { System.out.println("\tPOPL %EDX");}
 			| '{' lcmd '}' { System.out.println("\t\t# terminou o bloco..."); }
+			| DO {
+    				pRot.push(proxRot); proxRot += 2;
+    				System.out.printf("rot_%02d:\n", pRot.peek());
+			} 
+		cmd WHILE '(' exp ')' ';' {
+    		System.out.println("\tPOPL %EAX");
+    		System.out.println("\tCMPL $0, %EAX");
+    		System.out.printf("\tJNE rot_%02d\n", pRot.peek());
+    		pRot.pop();
+			}
 					     
 					       
       | WRITE '(' LIT ')' ';' { strTab.add($3);
