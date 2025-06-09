@@ -16,6 +16,7 @@
 %left AND
 %left  '>' '<' EQ LEQ GEQ NEQ
 %left '+' '-'
+%left '++' '--'
 %left '*' '/' '%'
 %left '!' 
 
@@ -141,6 +142,14 @@ exp :  NUM  { System.out.println("\tPUSHL $"+$1); }
 
 		   System.out.println("\PUSHL %EDX");
 	         }
+    | ID '++' { System.out.println("\tINCL _"+$1);
+    		System.out.println("\tPUSHL _"+$1); }
+    | '++' ID { System.out.println("\tINCL _"+$2);
+    		System.out.println("\tPUSHL _"+$2); }
+    | ID '--' { System.out.println("\tDECL _"+$1);
+    		System.out.println("\tPUSHL _"+$1); }
+    | '--' ID { System.out.println("\tDECL _"+$2);
+    		System.out.println("\tPUSHL _"+$2); }
     | '(' exp	')' 
     | '!' exp       { gcExpNot(); }
      
