@@ -153,7 +153,7 @@ exp :  NUM  { System.out.println("\tPUSHL $"+$1); }
     | ID '=' exp { System.out.println("\tPOPL %EDX");
   		   System.out.println("\tMOVL %EDX, _"+$1);
 
-		   System.out.println("\PUSHL %EDX");
+		   System.out.println("\tPUSHL %EDX");
 	         }
     | ID '++' { System.out.println("\tINCL _"+$1);
     		System.out.println("\tPUSHL _"+$1); }
