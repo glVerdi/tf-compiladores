@@ -1,0 +1,7 @@
+int i;
+main() {
+  i = 5;
+  ++i;
+  i++;
+  write("i=", i);
+}
