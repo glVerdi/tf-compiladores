@@ -50,9 +50,7 @@ lcmd : lcmd cmd
 	   |
 	   ;
 	   
-cmd :  ID '=' exp	';' {  System.out.println("\tPOPL %EDX");
-  						   System.out.println("\tMOVL %EDX, _"+$1);
-					     }
+cmd : exp	';' { System.out.println("\tPOPL %EDX");}
 			| '{' lcmd '}' { System.out.println("\t\t# terminou o bloco..."); }
 					     
 					       
@@ -137,7 +135,12 @@ restoIf : ELSE  {
 exp :  NUM  { System.out.println("\tPUSHL $"+$1); } 
     |  TRUE  { System.out.println("\tPUSHL $1"); } 
     |  FALSE  { System.out.println("\tPUSHL $0"); }      
- 		| ID   { System.out.println("\tPUSHL _"+$1); }
+    | ID   { System.out.println("\tPUSHL _"+$1); }
+    | ID '=' exp { System.out.println("\tPOPL %EDX");
+  		   System.out.println("\tMOVL %EDX, _"+$1);
+
+		   System.out.println("\PUSHL %EDX");
+	         }
     | '(' exp	')' 
     | '!' exp       { gcExpNot(); }
      
