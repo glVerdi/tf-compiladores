@@ -18,6 +18,7 @@
 %left '+' '-'
 %left '++' '--'
 %left '+='
+%left '?' ':'
 %left '*' '/' '%'
 %left '!' 
 
@@ -158,6 +159,22 @@ exp :  NUM  { System.out.println("\tPUSHL $"+$1); }
     		System.out.println("\tMOVL %EAX, _"+$1);
     		System.out.println("\tPUSHL %EAX");
 		}
+    | exp '?' exp ':' exp {
+				int rot1 = proxRot++;
+    				int rot2 = proxRot++;
+    				System.out.println("\tPOPL %EAX"); // condição
+    				System.out.println("\tCMPL $0, %EAX");
+    				System.out.printf("\tJE rot_%02d\n", rot1);
+    // se verdadeiro
+    				System.out.println("\tPOPL %EAX"); // expr verdadeira
+    				System.out.printf("\tJMP rot_%02d\n", rot2);
+    // se falso
+    				System.out.printf("rot_%02d:\n", rot1);
+    				System.out.println("\tPOPL %EAX"); // expr falsa
+    // fim
+    				System.out.printf("rot_%02d:\n", rot2);
+    				System.out.println("\tPUSHL %EAX");
+    			}
     | '(' exp	')' 
     | '!' exp       { gcExpNot(); }
      
