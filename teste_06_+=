@@ -1,0 +1,6 @@
+int x;
+main() {
+  x = 3;
+  x += 4;
+  write("x=", x);
+}
