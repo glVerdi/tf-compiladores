@@ -81,11 +81,6 @@ break     { return Parser.BREAK; }
 continue  { return Parser.CONTINUE; }
 return    { return Parser.RETURN; }
 do        { return Parser.DO; }
-switch    { return Parser.SWITCH; }
-case      { return Parser.CASE; }
-default   { return Parser.DEFAULT; }
-
-
 
 [a-zA-Z]+([a-zA-Z0-9]+)? { yyparser.yylval = new ParserVal(yytext());
             return Parser.ID; }
