@@ -11,6 +11,7 @@
 %token DO
 %token EQ, LEQ, GEQ, NEQ 
 %token AND, OR
+%token RETURN, BREAK, FOR, CONTINUE
 
 %right '='
 %left OR
@@ -274,21 +275,6 @@ exp :  NUM  { System.out.println("\tPUSHL $"+$1); }
  				System.out.println("\tPOPL %EBX");
    			System.out.println("\tPOPL %EAX");
 
-   		switch (oparit) {
-     		case '+' : System.out.println("\tADDL %EBX, %EAX" ); break;
-     		case '-' : System.out.println("\tSUBL %EBX, %EAX" ); break;
-     		case '*' : System.out.println("\tIMULL %EBX, %EAX" ); break;
-
-    		case '/': 
-           		     System.out.println("\tMOVL $0, %EDX");
-           		     System.out.println("\tIDIVL %EBX");
-           		     break;
-     		case '%': 
-           		     System.out.println("\tMOVL $0, %EDX");
-           		     System.out.println("\tIDIVL %EBX");
-           		     System.out.println("\tMOVL %EDX, %EAX");
-           		     break;
-    		}
    		System.out.println("\tPUSHL %EAX");
 		}
 
@@ -299,14 +285,6 @@ exp :  NUM  { System.out.println("\tPUSHL $"+$1); }
     System.out.println("\tCMPL %EAX, %EDX");
     System.out.println("\tMOVL $0, %EAX");
     
-    switch (oprel) {
-       case '<':  			System.out.println("\tSETL  %AL"); break;
-       case '>':  			System.out.println("\tSETG  %AL"); break;
-       case Parser.EQ:  System.out.println("\tSETE  %AL"); break;
-       case Parser.GEQ: System.out.println("\tSETGE %AL"); break;
-       case Parser.LEQ: System.out.println("\tSETLE %AL"); break;
-       case Parser.NEQ: System.out.println("\tSETNE %AL"); break;
-       }
     
     System.out.println("\tPUSHL %EAX");
 
@@ -325,10 +303,6 @@ exp :  NUM  { System.out.println("\tPUSHL $"+$1); }
    		System.out.println("\tMOVL $0, %EDX");
    		System.out.println("\tSETNE %DL");
 
-   		switch (oplog) {
-    			case Parser.OR:  System.out.println("\tORL  %EDX, %EAX");  break;
-    			case Parser.AND: System.out.println("\tANDL  %EDX, %EAX"); break;
-       }
 
     	System.out.println("\tPUSHL %EAX");
 	}
