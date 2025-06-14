@@ -1,0 +1,15 @@
+int i;
+
+void main() {  
+    for (i = 0; i < 10; i++) {
+        if (i == 5) {
+            break;
+        }
+        if (i % 2 == 0) {
+            continue;
+        }
+        i = i + 1;
+    }
+
+    write ("valor final de i apos break e continue: ", i);
+}

@@ -1,6 +1,6 @@
 int a;
 int x;
-main() {
+void main() {
   x = -1;
   a = (x > 0) ? 1 : 99;
   write("a=", a);

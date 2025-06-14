@@ -7,8 +7,7 @@
  
 
 %token ID, INT, FLOAT, BOOL, NUM, LIT, VOID, MAIN, READ, WRITE, IF, ELSE
-%token WHILE,TRUE, FALSE, IF, ELSE
-%token DO
+%token WHILE,TRUE, FALSE, DO
 %token EQ, LEQ, GEQ, NEQ 
 %token AND, OR
 %token RETURN, BREAK, FOR, CONTINUE
