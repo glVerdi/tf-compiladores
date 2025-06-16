@@ -4,10 +4,11 @@
   import java.util.ArrayList;
   import java.util.Stack;
 %}
- 
+
 
 %token ID, INT, FLOAT, BOOL, NUM, LIT, VOID, MAIN, READ, WRITE, IF, ELSE
-%token WHILE,TRUE, FALSE, DO
+%token WHILE,TRUE, FALSE, IF, ELSE
+%token DO
 %token EQ, LEQ, GEQ, NEQ 
 %token AND, OR
 %token RETURN, BREAK, FOR, CONTINUE
@@ -27,6 +28,8 @@
 %type <sval> LIT
 %type <sval> NUM
 %type <ival> type
+%type <sval> exp
+%type <sval> optExp
 
 
 %%
@@ -57,14 +60,14 @@ lcmd : lcmd cmd
 cmd : exp	';' { System.out.println("\tPOPL %EDX");}
 			| '{' lcmd '}' { System.out.println("\t\t# terminou o bloco..."); }
 			| DO {
-    				pRot.push(proxRot); proxRot += 2;
-    				System.out.printf("rot_%02d:\n", pRot.peek());
+    				pRot.push(proxRot); proxRot += 2; // Gera dois rótulos reservados: um para o início do laço (rot_X) e outro (futuro) para o fim se necessário. Armazena rot_X na pilha pRot, que será usado depois no JNE.
+    				System.out.printf("rot_%02d:\n", pRot.peek()); // Imprime o rótulo do início do laço.
 			} 
 		cmd WHILE '(' exp ')' ';' {
-    		System.out.println("\tPOPL %EAX");
-    		System.out.println("\tCMPL $0, %EAX");
-    		System.out.printf("\tJNE rot_%02d\n", pRot.peek());
-    		pRot.pop();
+    		System.out.println("\tPOPL %EAX"); // Retira da pilha o resultado da condição (exp após o while).
+    		System.out.println("\tCMPL $0, %EAX"); // Compara o valor da condição com 0. Se igual a 0 (falso), não repete. Se diferente de 0 (verdadeiro), salta para o início do laço.
+    		System.out.printf("\tJNE rot_%02d\n", pRot.peek()); // JNE = Jump if Not Equal → só salta se o resultado não for zero. Vai para rot_X, o início do do
+    		pRot.pop(); // Remove o rótulo da pilha (limpeza de controle de fluxo).
 			}
 					     
 					       
@@ -99,7 +102,47 @@ cmd : exp	';' { System.out.println("\tPOPL %EDX");}
 									System.out.println("\tMOVL %EAX, (%EDX)");
 									
 								}
-         
+    | FOR '(' optExp ';' optExp ';' optExp ')' {
+		// 1. Gera rótulos para inicialização, condição, incremento e fim do laço
+		int rotCond = proxRot++;   // Rótulo para checar a condição
+		int rotInc  = proxRot++;   // Rótulo para o incremento
+		int rotEnd  = proxRot++;   // Rótulo para sair do laço (fim)
+		
+		// 2. Empilha os rótulos de controle do laço
+		pRot.push(rotEnd);         // Usado para salto no fim
+		pInc.push(rotInc);         // Usado para ir para incremento
+
+		// 3. A inicialização foi processada em optExp (se houver)
+		// Não precisa repetir aqui — já foi gerado
+
+		// 4. Vai para o teste da condição
+		System.out.printf("rot_%02d:\n", rotCond);
+
+		// 5. A condição também foi gerada (se optExp não for null)
+		// Agora desempilha o valor da condição
+		System.out.println("\tPOPL %EAX");              // Retira o valor da condição da pilha
+		System.out.println("\tCMPL $0, %EAX");          // Compara com zero
+		System.out.printf("\tJE rot_%02d\n", rotEnd);   // Se for zero (falso), salta para fora
+	}	cmd {
+			// 6. Após o corpo do laço, vai para incremento
+			System.out.printf("rot_%02d:\n", pInc.peek());
+
+			// 7. O incremento foi gerado em optExp (se houver)
+			// Ele atualiza a variável de controle
+
+			// 8. Volta para testar a condição novamente
+			System.out.printf("\tJMP rot_%02d\n", rotCond);
+
+			// 9. Rótulo do fim do laço
+			System.out.printf("rot_%02d:\n", pRot.peek());
+
+			// 10. Desempilha os rótulos do for (necessário para suportar fors aninhados)
+			pInc.pop();
+			pRot.pop();
+		}
+	;
+
+
     | WHILE {
 					pRot.push(proxRot);  proxRot += 2;
 					System.out.printf("rot_%02d:\n",pRot.peek());
@@ -163,12 +206,12 @@ exp :  NUM  { System.out.println("\tPUSHL $"+$1); }
     		System.out.println("\tPUSHL _"+$1); }
     | '--' ID { System.out.println("\tDECL _"+$2);
     		System.out.println("\tPUSHL _"+$2); }
-    | ID "+=" exp {
-    		System.out.println("\tPOPL %EDX");
-    		System.out.println("\tMOVL _"+$1+", %EAX");
-    		System.out.println("\tADDL %EDX, %EAX");
-    		System.out.println("\tMOVL %EAX, _"+$1);
-    		System.out.println("\tPUSHL %EAX");
+    | ID "+=" exp { // a += b
+    		System.out.println("\tPOPL %EDX"); // Tira da pilha o valor da expressão exp (ou seja, o valor de b) e coloca em %EDX.
+    		System.out.println("\tMOVL _"+$1+", %EAX"); // Carrega o valor da variável ID (ex: a) da memória para o registrador %EAX.
+    		System.out.println("\tADDL %EDX, %EAX"); // Soma o valor de %EDX (que é b) com %EAX (que é a). O resultado de a + b fica agora em %EAX.
+    		System.out.println("\tMOVL %EAX, _"+$1); // Armazena o novo valor (soma) de volta na variável a.
+    		System.out.println("\tPUSHL %EAX"); // Empilha o resultado da operação a += b novamente na pilha.
 		}
     | exp '?' exp ':' exp {
 				int rot1 = proxRot++;
@@ -205,7 +248,13 @@ exp :  NUM  { System.out.println("\tPUSHL $"+$1); }
 		| exp OR exp		{ gcExpLog(OR); }											
 		| exp AND exp		{ gcExpLog(AND); }											
 		
-		;							
+		;		
+
+optExp:
+      exp   {  }    // passa o valor da expressão como string
+    |       {  }  // define explicitamente como null
+    ;
+					
 
 
 %%
@@ -220,6 +269,8 @@ exp :  NUM  { System.out.println("\tPUSHL $"+$1); }
   private Stack<Integer> pRot = new Stack<Integer>();
   private int proxRot = 1;
 
+  private Stack<Integer> pInc = new Stack<Integer>();
+  private int rotInicio;
 
   public static int ARRAY = 100;
 
