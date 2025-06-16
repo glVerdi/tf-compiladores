@@ -140,6 +140,17 @@ cmd : exp	';' { System.out.println("\tPOPL %EDX");}
 			pInc.pop();
 			pRot.pop();
 		}
+
+	| DO {
+    		pRot.push(proxRot); proxRot += 2; // Gera dois rótulos reservados: um para o início do laço (rot_X) e outro (futuro) para o fim se necessário. Armazena rot_X na pilha pRot, que será usado depois no JNE.
+    		System.out.printf("rot_%02d:\n", pRot.peek()); // Imprime o rótulo do início do laço.
+} 
+	|WHILE '(' exp ')' ';' {
+    		System.out.println("\tPOPL %EAX"); // Retira da pilha o resultado da condição (exp após o while).
+    		System.out.println("\tCMPL $0, %EAX"); // Compara o valor da condição com 0. Se igual a 0 (falso), não repete. Se diferente de 0 (verdadeiro), salta para o início do laço.
+    		System.out.printf("\tJNE rot_%02d\n", pRot.peek()); // JNE = Jump if Not Equal → só salta se o resultado não for zero. Vai para rot_X, o início do do
+    		pRot.pop(); // Remove o rótulo da pilha (limpeza de controle de fluxo).
+}
 	;
 
 
